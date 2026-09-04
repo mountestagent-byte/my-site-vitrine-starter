@@ -3,33 +3,565 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Page de départ</title>
+<title>RA Consulting — Intégration d'IA générative</title>
+<meta name="description" content="Diagnostic, pilote, passation. On met l'IA générative dans les workflows que votre entreprise fait déjà tourner, et votre équipe repart avec le système.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500&family=Instrument+Serif:ital@0;1&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
-  body {
-    margin: 0;
-    min-height: 100vh;
-    display: grid;
-    place-items: center;
-    font-family: system-ui, -apple-system, sans-serif;
-    background: #ffffff;
-    color: #111111;
+  /* ————— Tokens · design-system.md §02, §03, §04 ————— */
+  :root {
+    /* Midnight */
+    --navy-950:#030A14; --navy-900:#050F1D; --navy-800:#071426;
+    --navy-700:#0B1E33; --navy-600:#12293F; --navy-500:#1B364E;
+    /* Gold */
+    --gold-700:#775320; --gold-600:#9C7A2E; --gold-500:#BE9B48;
+    --gold-400:#D8B868; --gold-300:#E8C868; --gold-100:#FFF1C0;
+    /* Warm neutrals */
+    --cream-50:#FBF9F4; --cream-100:#F4F0E6;
+
+    /* Semantic aliases — midnight theme */
+    --bg-base:var(--navy-800);
+    --bg-sunken:var(--navy-900);
+    --surface-card:rgba(255,255,255,.035);
+    --surface-card-hover:rgba(255,255,255,.06);
+    --text-primary:var(--cream-50);
+    --text-secondary:rgba(251,249,244,.72);
+    --text-accent:var(--gold-300);
+    --accent:var(--gold-500);
+    --border-subtle:rgba(251,249,244,.12);
+    --border-hairline:rgba(190,155,72,.22);
+    --border-hairline-strong:rgba(190,155,72,.55);
+
+    --gradient-field:radial-gradient(120% 90% at 50% 42%, #0C2136 0%, #071426 55%, #030A14 100%);
+
+    /* Espacement — base 4, pas de 2 */
+    --s-2:2px; --s-4:4px; --s-8:8px; --s-12:12px; --s-16:16px; --s-20:20px;
+    --s-24:24px; --s-32:32px; --s-40:40px; --s-48:48px; --s-64:64px;
+    --s-80:80px; --s-112:112px; --s-160:160px;
+
+    /* Rayons */
+    --r-xs:2px; --r-control:3px; --r-md:6px; --r-card:10px; --r-xl:16px;
+
+    /* Motion */
+    --ease:cubic-bezier(.22,.61,.36,1);
+    --t-fast:90ms; --t-base:160ms; --t-slow:240ms; --t-reveal:640ms;
+
+    /* Typographie */
+    --font-display:"Instrument Serif", Georgia, "Times New Roman", serif;
+    --font-body:"Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-mono:"Space Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+    --header-h:64px;
+    --container:1240px;
+    --gutter:var(--s-64);
+    --section:var(--s-112);
   }
-  main { max-width: 34rem; padding: 2rem; }
-  h1 { font-size: 1.5rem; margin: 0 0 1rem; }
-  p { line-height: 1.6; margin: 0 0 .75rem; color: #444; }
-  code { background: #f1f1f1; padding: .15em .4em; border-radius: 4px; }
+
+  *, *::before, *::after { box-sizing:border-box; }
+
+  html { scroll-behavior:smooth; }
+
+  body {
+    margin:0;
+    background:#ff0000;
+    color:var(--text-primary);
+    font-family:var(--font-body);
+    font-size:16px;
+    font-weight:400;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    overflow-wrap:break-word;
+  }
+
+  /* ————— Primitives typographiques ————— */
+  .eyebrow {
+    font-family:var(--font-mono);
+    font-size:11px;
+    line-height:1.2;
+    text-transform:uppercase;
+    letter-spacing:.16em;
+    color:var(--text-accent);
+    margin:0 0 var(--s-20);
+  }
+
+  h1, h2, h3 {
+    font-family:var(--font-display);
+    font-weight:400;
+    letter-spacing:-.02em;
+    margin:0;
+  }
+  h1 { font-size:100px; line-height:1.04; }
+  h2 { font-size:clamp(42px, 6vw, 72px); line-height:1.04; }
+  h3 { font-size:28px; line-height:1.16; letter-spacing:0; }
+
+  .lead {
+    font-size:21px;
+    line-height:1.5;
+    font-weight:300;
+    color:var(--text-secondary);
+    max-width:64ch;
+    margin:var(--s-24) 0 0;
+  }
+
+  p { margin:0; max-width:64ch; }
+  .caption { font-size:13px; line-height:1.5; color:var(--text-secondary); }
+
+  .rule {
+    height:1px;
+    border:0;
+    background:var(--border-subtle);
+    margin:var(--s-40) 0 var(--s-32);
+    max-width:64ch;
+  }
+
+  a { color:var(--text-accent); text-decoration:none; }
+  a:hover { text-decoration:underline; text-underline-offset:3px; }
+
+  :focus-visible {
+    outline:none;
+    box-shadow:0 0 0 1px var(--bg-base), 0 0 0 4px rgba(190,155,72,.55);
+    border-radius:var(--r-control);
+  }
+
+  /* ————— Structure ————— */
+  .wrap {
+    max-width:var(--container);
+    margin:0 auto;
+    padding-inline:var(--gutter);
+  }
+
+  section {
+    padding-block:var(--section);
+    border-bottom:1px solid var(--border-subtle);
+    /* l'en-tete est collant : sans cette marge, une ancre cache l'eyebrow et le titre */
+    scroll-margin-top:var(--header-h);
+  }
+  #accueil, #ce-que-je-fais, #pour-qui, #contact { background:#ff0000; }
+
+  /* ————— En-tête collant · §07 ————— */
+  .site-header {
+    position:sticky; top:0; z-index:10;
+    background:#ff0000;
+    backdrop-filter:blur(14px) saturate(120%);
+    -webkit-backdrop-filter:blur(14px) saturate(120%);
+    border-bottom:1px solid var(--border-subtle);
+  }
+  .site-header .wrap {
+    min-height:64px;
+    display:flex; align-items:center; gap:var(--s-24);
+    flex-wrap:wrap;
+    padding-block:var(--s-12);
+  }
+
+  /* Lockup horizontal · §01 : mark · filet 1px · RA / Consulting.
+     Clearspace = 0.5x la hauteur du mark, soit 16px pour un mark de 32px.
+     Le mark est plafonne a 32px : a 48px, sa clearspace depasserait le header de 64px. */
+  .lockup { display:flex; align-items:center; gap:var(--s-16); min-height:44px; }
+  .lockup:hover { text-decoration:none; }
+  .lockup .mark {
+    width:32px; height:32px; flex:none;
+    object-fit:contain;
+    display:block;
+  }
+  .lockup .divider { width:1px; align-self:stretch; background:var(--border-hairline); }
+  /* Tant que le fichier du mark est absent ou illisible, le lockup reste typographique. */
+  .lockup.no-mark .mark, .lockup.no-mark .divider { display:none; }
+  .wordmark { display:flex; flex-direction:column; gap:var(--s-2); }
+  .wordmark .ra {
+    font-family:var(--font-display);
+    font-size:22px; line-height:1;
+    letter-spacing:.06em;
+    color:var(--text-primary);
+  }
+  .wordmark .sub {
+    font-family:var(--font-mono);
+    font-size:11px; line-height:1.2;
+    text-transform:uppercase; letter-spacing:.16em;
+    color:var(--text-accent);
+  }
+
+  .nav { display:flex; align-items:center; gap:var(--s-8); margin-left:auto; flex-wrap:wrap; }
+  .nav-links { display:flex; align-items:center; gap:var(--s-8); }
+  .lbl-short[hidden] { display:none; }
+  .nav a {
+    display:inline-flex; align-items:center;
+    min-height:44px; padding-inline:var(--s-12);
+    font-size:15px; color:var(--text-secondary);
+    border-radius:var(--r-control);
+    transition:color var(--t-base) var(--ease);
+  }
+  .nav a:hover { color:var(--text-primary); text-decoration:none; }
+
+  /* ————— Boutons · §04 ————— */
+  .btn {
+    display:inline-flex; align-items:center; justify-content:center; gap:var(--s-8);
+    min-height:44px;
+    padding:var(--s-12) var(--s-24);
+    border-radius:var(--r-control);
+    font-family:var(--font-body);
+    font-size:15px; font-weight:500;
+    border:1px solid transparent;
+    transition:background-color var(--t-base) var(--ease),
+               border-color var(--t-base) var(--ease),
+               color var(--t-base) var(--ease),
+               transform var(--t-fast) var(--ease);
+  }
+  .btn:hover { text-decoration:none; }
+  .btn:active { transform:translateY(1px); }
+
+  /* Une seule pastille or par vue — celle-ci porte l'action principale */
+  .btn-gold { background:var(--gold-500); color:var(--navy-800); }
+  .btn-gold:hover { background:var(--gold-400); }
+
+  .btn-hairline { border-color:var(--border-hairline); color:var(--text-primary); background:transparent; }
+  .btn-hairline:hover { border-color:var(--border-hairline-strong); background:rgba(255,255,255,.035); }
+
+  .actions { display:flex; align-items:center; gap:var(--s-16); flex-wrap:wrap; margin-top:var(--s-40); }
+
+  .textlink {
+    display:inline-flex; align-items:center; gap:var(--s-8);
+    min-height:44px; font-size:15px;
+  }
+
+  /* ————— Accueil ————— */
+  .byline {
+    font-family:var(--font-mono);
+    font-size:13px; letter-spacing:.04em;
+    color:var(--text-secondary);
+    margin-top:var(--s-32);
+  }
+
+  /* ————— Cartes · §04 : pas d'ombre, la hairline fait le travail ————— */
+  .grid {
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:var(--s-24);
+    margin-top:var(--s-48);
+  }
+  .card {
+    background:var(--surface-card);
+    border:1px solid var(--border-subtle);
+    border-radius:var(--r-card);
+    padding:var(--s-24);
+    display:flex; flex-direction:column; gap:var(--s-12);
+    transition:background-color var(--t-base) var(--ease),
+               border-color var(--t-base) var(--ease),
+               transform var(--t-base) var(--ease);
+  }
+  .card:hover {
+    background:var(--surface-card-hover);
+    border-color:var(--border-hairline-strong);
+    transform:translateY(-1px);
+  }
+  .card .icon { color:var(--text-accent); }
+  .card h3 { margin-top:var(--s-4); }
+  .card p { color:var(--text-secondary); font-size:15px; }
+  .card .step {
+    font-family:var(--font-mono);
+    font-size:11px; text-transform:uppercase; letter-spacing:.16em;
+    color:var(--text-secondary);
+  }
+
+  /* ————— Pour qui ————— */
+  .checklist { list-style:none; margin:var(--s-32) 0 0; padding:0; max-width:64ch; }
+  .checklist li {
+    display:flex; gap:var(--s-16);
+    padding-block:var(--s-16);
+    border-top:1px solid var(--border-subtle);
+    color:var(--text-secondary);
+  }
+  .checklist li:last-child { border-bottom:1px solid var(--border-subtle); }
+  .checklist .icon { color:var(--text-accent); flex:none; margin-top:var(--s-4); }
+
+  .notfor {
+    margin-top:var(--s-32);
+    padding-left:var(--s-20);
+    border-left:1px solid var(--border-hairline);
+    color:var(--text-secondary);
+    max-width:64ch;
+  }
+  .notfor strong { color:var(--text-primary); font-weight:500; }
+
+  /* ————— Contact ————— */
+  .contact-meta { margin-top:var(--s-32); display:flex; flex-direction:column; gap:var(--s-12); }
+  .contact-meta .row { display:flex; gap:var(--s-12); align-items:baseline; flex-wrap:wrap; }
+  .contact-meta .label {
+    font-family:var(--font-mono);
+    font-size:11px; text-transform:uppercase; letter-spacing:.16em;
+    color:var(--text-secondary);
+    min-width:88px;
+  }
+  /* Toutes les valeurs prennent 44px, lien ou non : sinon la ligne e-mail
+     se décale par rapport aux deux autres. */
+  .contact-meta .row > :last-child { min-height:44px; display:inline-flex; align-items:center; }
+
+  /* ————— Pied de page ————— */
+  footer { padding-block:var(--s-48); }
+  footer .wrap { display:flex; gap:var(--s-24); align-items:center; flex-wrap:wrap; }
+  footer .caption { margin-left:auto; }
+  .footer-nav { display:flex; gap:var(--s-24); }
+  .footer-nav a { display:inline-flex; align-items:center; min-height:44px; font-size:15px; }
+
+  /* ————— Apparition · fade + 8px, 640ms, une seule fois ————— */
+  .reveal { opacity:1; transform:none; }
+  .js .reveal { opacity:0; transform:translateY(8px); }
+  .js .reveal.is-in {
+    opacity:1; transform:none;
+    transition:opacity var(--t-reveal) var(--ease), transform var(--t-reveal) var(--ease);
+  }
+
+  /* ————— Mobile ————— */
+  @media (max-width:900px) {
+    .grid { grid-template-columns:1fr; }
+  }
+  @media (max-width:600px) {
+    :root { --gutter:var(--s-32); --section:var(--s-64); --header-h:76px; }
+    /* Plancher de 15px imposé par CLAUDE.md ; le 11/13px du système reste en desktop. */
+    .eyebrow, .card .step, .contact-meta .label, .wordmark .sub { font-size:15px; letter-spacing:.12em; }
+    .caption, .byline { font-size:15px; }
+    h3 { font-size:24px; }
+    .lead { font-size:19px; }
+
+    /* L'en-tête reste sur une rangée : empilé, il montait à 195px et mangeait
+       un quart de l'écran en permanence. Les deux liens d'ancre passent en bas
+       de page ; l'action principale reste atteignable en haut. */
+    .site-header .wrap { flex-wrap:nowrap; gap:var(--s-16); padding-block:var(--s-8); }
+    .nav-links { display:none; }
+    .nav { margin-left:auto; }
+    .nav .btn { padding-inline:var(--s-16); white-space:nowrap; }
+    .nav .lbl-long { display:none; }
+    .nav .lbl-short[hidden] { display:inline; }
+    .wordmark .ra { font-size:20px; }
+    .wordmark .sub { font-size:15px; letter-spacing:.08em; }
+
+    /* Étiquette au-dessus de la valeur : à 15px, le mono déborde la colonne de 88px */
+    .contact-meta .row { flex-direction:column; gap:var(--s-4); }
+    .contact-meta .label { min-width:0; }
+
+    .footer-nav { display:flex; flex-wrap:wrap; gap:var(--s-16); }
+    footer .wrap { flex-direction:column; align-items:flex-start; gap:var(--s-16); }
+    footer .caption { margin-left:0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior:auto; }
+    *, *::before, *::after { transition-duration:0ms !important; animation-duration:0ms !important; }
+    .js .reveal { opacity:1; transform:none; }
+  }
 </style>
 </head>
 <body>
-  <main>
-    <h1>Cette page attend ton design system.</h1>
-    <p>
-      Elle est volontairement laide. C'est le point de départ : dans une heure,
-      elle portera tes couleurs, ta typographie et tes mots, et elle sera en ligne.
-    </p>
-    <p>
-      Étape suivante : ouvre <code>PROMPTS.md</code> et suis l'itération 1.
-    </p>
-  </main>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="lockup" href="#accueil">
+      <img class="mark" src="assets/logo-mark-gold.png" alt="" width="32" height="32"
+           onerror="this.closest('.lockup').classList.add('no-mark')">
+      <span class="divider" aria-hidden="true"></span>
+      <span class="wordmark">
+        <span class="ra">RA</span>
+        <span class="sub">Consulting</span>
+      </span>
+    </a>
+    <nav class="nav" aria-label="Navigation principale">
+      <span class="nav-links">
+        <a href="#ce-que-je-fais">Ce que je fais</a>
+        <a href="#pour-qui">Pour qui</a>
+      </span>
+      <a class="btn btn-hairline" href="#contact" aria-label="Réserver un rendez-vous de découverte">
+        <span class="lbl-long">Réserver un rendez-vous</span>
+        <span class="lbl-short" hidden>Réserver</span>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <!-- ————— Accueil ————— -->
+  <section id="accueil">
+    <div class="wrap reveal">
+      <p class="eyebrow">Intégration d'IA générative</p>
+      <h1>Mettez l'IA là où le travail se fait vraiment</h1>
+      <p class="lead">
+        J'intègre l'IA générative dans les workflows que votre entreprise fait déjà
+        tourner. Un diagnostic de deux semaines, un pilote de six semaines, et un
+        système que votre équipe possède à la fin.
+      </p>
+      <div class="actions">
+        <a class="btn btn-gold" href="#contact">Réserver un rendez-vous de découverte</a>
+        <a class="textlink" href="#ce-que-je-fais">
+          Voir comment ça se passe
+          <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
+        </a>
+      </div>
+      <p class="byline">[PRÉNOM NOM] · RA Consulting</p>
+    </div>
+  </section>
+
+  <!-- ————— Ce que je fais ————— -->
+  <section id="ce-que-je-fais">
+    <div class="wrap reveal">
+      <p class="eyebrow">Ce que je fais</p>
+      <h2>Un workflow à la fois</h2>
+      <p class="lead">
+        Trois étapes, dans cet ordre, sans étape sautée. Chacune se termine par
+        quelque chose que vous gardez.
+      </p>
+      <hr class="rule">
+      <p>
+        Je ne vends pas un programme de transformation. Je regarde ce que votre
+        équipe fait chaque semaine, je trouve l'endroit où l'IA rapporte vraiment,
+        et je m'arrête là où votre équipe peut reprendre seule.
+      </p>
+
+      <div class="grid">
+        <article class="card">
+          <svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3"/><path d="m16 16-1.9-1.9"/></svg>
+          <p class="step">01 · Diagnostic</p>
+          <h3>Deux semaines pour savoir où l'IA rapporte</h3>
+          <p>
+            On passe en revue les workflows que vous faites déjà tourner. J'en
+            retiens ceux qui gagnent à être outillés et je vous dis lesquels n'en
+            valent pas la peine. Vous repartez avec la liste, chiffrée, même si
+            vous vous arrêtez là.
+          </p>
+        </article>
+
+        <article class="card">
+          <svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="8" height="8" x="3" y="3" rx="2"/><path d="M7 11v4a2 2 0 0 0 2 2h4"/><rect width="8" height="8" x="13" y="13" rx="2"/></svg>
+          <p class="step">02 · Pilote</p>
+          <h3>Six semaines sur un seul workflow</h3>
+          <p>
+            On met un workflow en production, avec vos données et vos contraintes
+            réelles. Un seul, mesuré, avant d'en généraliser un deuxième. C'est ce
+            qui évite de découvrir le problème à l'échelle de l'entreprise.
+          </p>
+        </article>
+
+        <article class="card">
+          <svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
+          <p class="step">03 · Passation</p>
+          <h3>La passation est le livrable</h3>
+          <p>
+            Votre équipe repart avec le système, la documentation et les cas
+            d'évaluation qui permettent de le faire évoluer. Une fois le projet
+            fini, plus rien ne dépend de moi. C'est le but.
+          </p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ————— Pour qui ————— -->
+  <section id="pour-qui">
+    <div class="wrap reveal">
+      <p class="eyebrow">Pour qui</p>
+      <h2>Des dirigeants qui veulent y voir clair</h2>
+      <p class="lead">
+        Je travaille avec des dirigeants de petites entreprises qui veulent
+        clarifier leur stratégie numérique, sans y passer six mois.
+      </p>
+      <hr class="rule">
+
+      <ul class="checklist">
+        <li>
+          <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+          <span>L'IA revient dans toutes vos conversations et personne dans l'équipe ne sait par où commencer.</span>
+        </li>
+        <li>
+          <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+          <span>Vous avez des processus qui tournent déjà et vous voulez savoir lesquels valent d'être outillés.</span>
+        </li>
+        <li>
+          <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+          <span>Vous préférez un système que votre équipe tient à un prestataire dont vous ne pouvez plus vous passer.</span>
+        </li>
+        <li>
+          <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+          <span>Vous voulez une réponse chiffrée avant d'engager un budget, pas après.</span>
+        </li>
+      </ul>
+
+      <p class="notfor">
+        <strong>Ce n'est pas pour vous</strong> si vous cherchez une démonstration à
+        montrer en comité, ou un pilote que personne ne reprendra ensuite. Je le dis
+        au premier échange plutôt qu'au troisième mois.
+      </p>
+    </div>
+  </section>
+
+  <!-- ————— Me contacter ————— -->
+  <section id="contact">
+    <div class="wrap reveal">
+      <p class="eyebrow">Me contacter</p>
+      <h2>Réservons un rendez-vous de découverte</h2>
+      <p class="lead">
+        On prend un workflow concret, on regarde ensemble ce qu'il y a à y gagner,
+        et je vous dis franchement si j'ai quelque chose d'utile à apporter. Sans
+        engagement.
+      </p>
+      <hr class="rule">
+
+      <div class="actions" style="margin-top:0">
+        <a class="btn btn-gold" href="[LIEN DE PRISE DE RENDEZ-VOUS]">Réserver un rendez-vous de découverte</a>
+      </div>
+
+      <div class="contact-meta">
+        <p class="row">
+          <span class="label">Agenda</span>
+          <span class="caption">[LIEN DE PRISE DE RENDEZ-VOUS]</span>
+        </p>
+        <p class="row">
+          <span class="label">E-mail</span>
+          <a href="mailto:[EMAIL DE CONTACT]">[EMAIL DE CONTACT]</a>
+        </p>
+        <p class="row">
+          <span class="label">Durée</span>
+          <span class="caption">[DURÉE DU RENDEZ-VOUS]</span>
+        </p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <span class="wordmark" aria-hidden="true">
+      <span class="ra">RA</span>
+      <span class="sub">Consulting</span>
+    </span>
+    <nav class="footer-nav" aria-label="Navigation de pied de page">
+      <a href="#ce-que-je-fais">Ce que je fais</a>
+      <a href="#pour-qui">Pour qui</a>
+      <a href="#contact">Me contacter</a>
+    </nav>
+    <p class="caption">[PRÉNOM NOM] · [EMAIL DE CONTACT]</p>
+  </div>
+</footer>
+
+<script>
+  document.documentElement.classList.add('js');
+  (function () {
+    var items = document.querySelectorAll('.reveal');
+    if (!('IntersectionObserver' in window) ||
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      items.forEach(function (el) { el.classList.add('is-in'); });
+      return;
+    }
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-in');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { rootMargin: '0px 0px -10% 0px' });
+    items.forEach(function (el) { io.observe(el); });
+  })();
+</script>
+
 </body>
 </html>
